@@ -1,0 +1,89 @@
+backend:
+  name: github
+  repo: your-github/narrow-x
+  branch: main
+  auth_methods: [oauth]
+  base_url: https://example.com
+  auth_endpoint: oauth
+media_folder: public/uploads
+public_folder: /uploads
+slug:
+  encoding: ascii
+  clean_accents: true
+collections:
+  - name: posts
+    label: 文章
+    folder: src/content/posts/zh-cn
+    create: true
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - { label: 摘要, name: description, widget: text, required: false }
+      - { label: 发布时间, name: pubDate, widget: datetime }
+      - { label: 草稿, name: draft, widget: boolean, default: true }
+      - { label: 置顶, name: featured, widget: boolean, default: false }
+      - { label: 评论, name: comments, widget: boolean, default: true }
+      - { label: 封面, name: cover, widget: image, required: false }
+      - { label: 分类, name: categories, widget: list, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - { label: 正文, name: body, widget: markdown }
+  - name: projects
+    label: 作品
+    folder: src/content/projects/zh-cn
+    create: true
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - { label: 摘要, name: description, widget: text, required: false }
+      - { label: 发布时间, name: pubDate, widget: datetime, required: false }
+      - { label: 草稿, name: draft, widget: boolean, default: true }
+      - { label: 精选, name: featured, widget: boolean, default: false }
+      - { label: 封面, name: cover, widget: image, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - label: 链接
+        name: links
+        widget: list
+        required: false
+        fields:
+          - { label: 名称, name: label, widget: string }
+          - { label: 地址, name: url, widget: string }
+          - { label: 图标, name: icon, widget: string, required: false }
+          - { label: 样式, name: variant, widget: select, options: [primary, secondary], default: secondary }
+      - { label: 正文, name: body, widget: markdown }
+  - name: recommendations
+    label: 推荐
+    folder: src/content/recommendations/zh-cn
+    create: true
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - { label: 摘要, name: description, widget: text, required: false }
+      - { label: 发布时间, name: pubDate, widget: datetime, required: false }
+      - { label: 草稿, name: draft, widget: boolean, default: true }
+      - { label: 精选, name: featured, widget: boolean, default: false }
+      - { label: 封面, name: cover, widget: image, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - label: 链接
+        name: links
+        widget: list
+        required: false
+        fields:
+          - { label: 名称, name: label, widget: string }
+          - { label: 地址, name: url, widget: string }
+          - { label: 图标, name: icon, widget: string, required: false }
+          - { label: 样式, name: variant, widget: select, options: [primary, secondary], default: secondary }
+      - { label: 正文, name: body, widget: markdown }
+  - name: pages
+    label: 页面
+    files:
+      - label: 关于
+        name: about
+        file: src/content/pages/zh-cn/about.md
+        fields:
+          - { label: 标题, name: title, widget: string }
+          - { label: 摘要, name: description, widget: text, required: false }
+          - { label: 草稿, name: draft, widget: boolean, default: false }
+          - { label: 正文, name: body, widget: markdown }

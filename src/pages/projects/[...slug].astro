@@ -1,0 +1,19 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ProjectDetail from '../../components/routes/ProjectDetail.astro';
+import { defaultLocale } from '../../config/i18n';
+import { getLocalizedEntries, entrySlug } from '../../lib/content/entries';
+
+export async function getStaticPaths() {
+  const projects = await getLocalizedEntries('projects', defaultLocale);
+  return projects.map((entry) => ({ params: { slug: entrySlug(entry) }, props: { entry } }));
+}
+
+interface Props {
+  entry: CollectionEntry<'projects'>;
+}
+
+const { entry } = Astro.props;
+---
+
+<ProjectDetail locale={defaultLocale} entry={entry} />

@@ -1,0 +1,23 @@
+---
+import SeriesDetail from '../../../components/routes/SeriesDetail.astro';
+import { nonDefaultLocales, type Locale } from '../../../config/i18n';
+import { getLocalizedSeries, type ResolvedSeries } from '../../../lib/content/series';
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const locale of nonDefaultLocales) {
+    const series = await getLocalizedSeries(locale);
+    paths.push(...series.map((item) => ({ params: { locale, slug: item.slug }, props: { item, locale } })));
+  }
+  return paths;
+}
+
+interface Props {
+  item: ResolvedSeries;
+  locale: Locale;
+}
+
+const { item, locale } = Astro.props;
+---
+
+<SeriesDetail locale={locale} item={item} />

@@ -1,0 +1,79 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { Locale } from '../../config/i18n';
+import { getFooterNavigation } from '../../config/navigation';
+import { siteConfig } from '../../config/site';
+import { useTranslations } from '../../i18n/utils';
+
+interface Props {
+  locale: Locale;
+}
+
+const year = new Date().getFullYear();
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const navigation = getFooterNavigation(locale);
+const license = siteConfig.post.license;
+const themeCredit = siteConfig.themeCredit;
+---
+
+<footer class="mt-16 pt-8 pb-24 text-sm text-muted-foreground lg:pb-8">
+  {navigation.length > 0 && (
+    <nav class="mb-6" aria-label={t('a11y.footerNav')}>
+      <div class="flex flex-wrap items-center justify-center gap-1">
+        {navigation.map((item) => (
+          <a href={item.href} class="footer-nav-link">
+            <Icon name={item.icon} class="h-4 w-4" />
+            <span>{item.label}</span>
+          </a>
+        ))}
+      </div>
+    </nav>
+  )}
+
+  <div class="mb-6 border-t border-border"></div>
+
+  <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <p class="text-center sm:text-left">
+      © {year} {siteConfig.author.name}
+      {license.enabled && (
+        <>
+          {' · '}
+          <a
+            class="transition-colors hover:text-foreground hover:underline"
+            href={license.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >{license.name}</a>
+        </>
+      )}
+    </p>
+
+    {themeCredit.url ? (
+      <a
+        class="transition-colors hover:text-foreground hover:underline"
+        href={themeCredit.url}
+        target="_blank"
+        rel="noopener noreferrer"
+      >{t('footer.theme')} {themeCredit.name}</a>
+    ) : (
+      <span>{t('footer.theme')} {themeCredit.name} · {t('footer.themePending')}</span>
+    )}
+  </div>
+
+  {siteConfig.author.social.length > 0 && (
+    <div class="mt-6 flex items-center justify-center gap-2 lg:hidden">
+      {siteConfig.author.social.map((item) => (
+        <a
+          class="grid h-9 w-9 place-items-center rounded-[var(--radius-control)] transition-colors duration-200 hover:bg-accent hover:text-accent-foreground"
+          href={item.url}
+          target={item.url.startsWith('http') ? '_blank' : undefined}
+          rel={item.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+          aria-label={item.name}
+        >
+          <Icon name={item.icon} class="h-4 w-4" />
+        </a>
+      ))}
+    </div>
+  )}
+</footer>

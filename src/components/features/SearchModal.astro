@@ -1,0 +1,58 @@
+---
+import { Icon } from 'astro-icon/components';
+import { defaultLocale, type Locale } from '../../config/i18n';
+import { useTranslations } from '../../i18n/utils';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const typeLabels = {
+  posts: t('posts.title'),
+  projects: t('projects.title'),
+  recommendations: t('recommendations.title'),
+  pages: t('search.type.page'),
+  series: t('series.title')
+};
+---
+
+<div id="search-overlay" class="pointer-events-none fixed inset-0 z-50 bg-background/70 opacity-0 backdrop-blur-sm transition-opacity"></div>
+<section
+  id="search-modal"
+  data-locale={locale}
+  data-fallback-locale={defaultLocale}
+  data-type-labels={JSON.stringify(typeLabels)}
+  tabindex="-1"
+  inert
+  class="pointer-events-none fixed top-4 left-1/2 z-50 max-h-[calc(100dvh-2rem)] w-[min(50rem,calc(100vw-2rem))] -translate-x-1/2 scale-95 overflow-hidden rounded-lg border border-border bg-popover opacity-0 shadow-2xl transition sm:top-20"
+  aria-hidden="true"
+  role="dialog"
+  aria-modal="true"
+  aria-label={t('search.label')}
+>
+  <div class="flex items-center gap-2 border-b border-border px-3 py-2">
+    <Icon name="lucide:search" class="h-4 w-4 text-muted-foreground" />
+    <input
+      id="search-input"
+      type="text"
+      class="min-w-0 flex-1 bg-transparent py-2 outline-none"
+      placeholder={t('search.placeholder')}
+      aria-label={t('search.label')}
+      aria-controls="search-results"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <button id="search-close" type="button" class="grid h-8 w-8 place-items-center rounded-md hover:bg-accent" aria-label={t('search.close')}>
+      <Icon name="lucide:x" class="h-4 w-4" />
+    </button>
+  </div>
+  <div class="max-h-[min(65dvh,40rem)] overflow-auto p-2">
+    <p id="search-empty" class="px-3 py-10 text-center text-sm text-muted-foreground">{t('search.empty')}</p>
+    <p id="search-loading" class="hidden px-3 py-10 text-center text-sm text-muted-foreground" role="status">{t('search.loading')}</p>
+    <p id="search-no-results" class="hidden px-3 py-10 text-center text-sm text-muted-foreground" role="status">{t('search.noResults')}</p>
+    <p id="search-error" class="hidden px-3 py-10 text-center text-sm text-muted-foreground" role="status">{t('search.error')}</p>
+    <div id="search-results" class="space-y-1" aria-live="polite"></div>
+  </div>
+</section>

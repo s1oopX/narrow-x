@@ -1,0 +1,24 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import RecommendationDetail from '../../../components/routes/RecommendationDetail.astro';
+import { nonDefaultLocales, type Locale } from '../../../config/i18n';
+import { getLocalizedEntries, entrySlug } from '../../../lib/content/entries';
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const locale of nonDefaultLocales) {
+    const recommendations = await getLocalizedEntries('recommendations', locale);
+    paths.push(...recommendations.map((entry) => ({ params: { locale, slug: entrySlug(entry) }, props: { entry, locale } })));
+  }
+  return paths;
+}
+
+interface Props {
+  entry: CollectionEntry<'recommendations'>;
+  locale: Locale;
+}
+
+const { entry, locale } = Astro.props;
+---
+
+<RecommendationDetail locale={locale} entry={entry} />

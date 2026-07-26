@@ -1,0 +1,57 @@
+---
+import type { Locale } from '../../config/i18n';
+import { useTranslations } from '../../i18n/utils';
+import { archiveFilterPath, collectArchiveTerms, getDisplayEntries, localizedEntryPath } from '../../lib/content/entries';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const posts = await getDisplayEntries('posts', locale);
+const recent = posts
+  .slice()
+  .sort((a, b) => (b.data.updatedDate ?? b.data.pubDate).getTime() - (a.data.updatedDate ?? a.data.pubDate).getTime())
+  .slice(0, 5);
+const tags = collectArchiveTerms(posts, 'tags', locale).slice(0, 8);
+---
+
+<aside class="hidden w-60 shrink-0 xl:block" aria-label={t('panel.label')}>
+  <div class="sticky top-20 space-y-10 py-8">
+    {recent.length > 0 && (
+      <section>
+        <h2 class="mb-4 text-xs font-semibold uppercase text-muted-foreground">{t('panel.recent')}</h2>
+        <ul class="space-y-1 border-l border-border pl-4">
+          {recent.map((post) => (
+            <li>
+              <a
+                href={localizedEntryPath('posts', post)}
+                class="block truncate py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                title={post.data.title}
+              >
+                {post.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {tags.length > 0 && (
+      <section>
+        <h2 class="mb-4 text-xs font-semibold uppercase text-muted-foreground">{t('panel.tags')}</h2>
+        <div class="flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <a
+              href={archiveFilterPath(locale, 'tag', tag.value)}
+              class="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+            >
+              {tag.value}
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+  </div>
+</aside>

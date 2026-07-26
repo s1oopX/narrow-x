@@ -1,0 +1,80 @@
+---
+import { Icon } from 'astro-icon/components';
+import { getLocalePath, type Locale } from '../../config/i18n';
+import { getPrimaryNavigation, isActiveNavPath } from '../../config/navigation';
+import { siteConfig } from '../../config/site';
+import { useTranslations } from '../../i18n/utils';
+import { assetPath } from '../../lib/asset-path';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const currentPath = Astro.url.pathname;
+const homeHref = getLocalePath(locale, '/');
+const navigation = getPrimaryNavigation(locale, t);
+
+function isActive(href: string) {
+  return isActiveNavPath(href, currentPath, homeHref);
+}
+
+const avatarSrc = assetPath(siteConfig.author.avatar);
+---
+
+<aside class="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-card px-4 py-5 lg:flex" aria-label={t('a11y.sidebar')}>
+  <a href={homeHref} class="flex shrink-0 flex-col items-center text-center">
+    <img
+      src={avatarSrc}
+      alt={siteConfig.author.name}
+      width="96"
+      height="96"
+      class="h-24 w-24 rounded-full border-4 border-background object-cover shadow-sm"
+      loading="eager"
+    />
+    <span class="mt-4 text-xl font-semibold">{siteConfig.name}</span>
+  </a>
+  <p class="mx-auto mt-2 max-w-56 text-center text-sm leading-6 text-muted-foreground">
+    {siteConfig.author.title[locale]}
+  </p>
+
+  <nav class="mt-6 min-h-0 flex-1" aria-label={t('a11y.primaryNav')}>
+    <ul class="space-y-1">
+      {navigation.map((item) => (
+        <li>
+          <a
+            href={item.href}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+            class:list={[
+              'flex min-h-10 items-center gap-3 rounded-[var(--radius-control)] px-4 text-sm font-semibold transition-colors',
+              isActive(item.href)
+                ? 'bg-accent text-accent-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+            ]}
+          >
+            <Icon name={item.icon} class="h-4 w-4 shrink-0" />
+            <span>{item.label}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  <div class="mt-4 shrink-0 border-t border-border pt-4">
+    <div class="flex items-center justify-center gap-2">
+      {siteConfig.author.social.map((item) => (
+        <a
+          href={item.url}
+          target={item.url.startsWith('http') ? '_blank' : undefined}
+          rel={item.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+          class="grid h-10 w-10 place-items-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          aria-label={item.name}
+          title={item.name}
+        >
+          <Icon name={item.icon} class="h-4 w-4" />
+        </a>
+      ))}
+    </div>
+  </div>
+</aside>

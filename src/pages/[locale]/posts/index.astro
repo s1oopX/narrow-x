@@ -1,0 +1,16 @@
+---
+import PostsIndex from '../../../components/routes/PostsIndex.astro';
+import { nonDefaultLocales, type Locale } from '../../../config/i18n';
+
+export function getStaticPaths() {
+  return nonDefaultLocales.map((locale) => ({ params: { locale }, props: { locale } }));
+}
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+---
+
+<PostsIndex locale={locale} />

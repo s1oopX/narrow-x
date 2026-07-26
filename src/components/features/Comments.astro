@@ -1,0 +1,99 @@
+---
+import { siteConfig } from '../../config/site';
+import type { Locale } from '../../config/i18n';
+import { useTranslations } from '../../i18n/utils';
+import { assetPath } from '../../lib/asset-path';
+
+interface Props {
+  locale: Locale;
+}
+
+const comments = siteConfig.comments;
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const enabled = comments.enabled && comments.provider === 'giscus' && Boolean(comments.giscus.repo);
+const label = t('comments.label');
+---
+
+{enabled && (
+  <section
+    data-comments
+    data-giscus-theme-light={`${assetPath('/giscus-light.css')}?v=10`}
+    data-giscus-theme-dark={`${assetPath('/giscus-dark.css')}?v=10`}
+    class="mt-12 min-h-40 border-t border-border pt-8"
+    aria-label={label}
+  >
+    <script
+      type="application/json"
+      data-giscus-loader="true"
+      data-client-src="https://giscus.app/client.js"
+      data-repo={comments.giscus.repo}
+      data-repo-id={comments.giscus.repoId}
+      data-category={comments.giscus.category}
+      data-category-id={comments.giscus.categoryId}
+      data-mapping={comments.giscus.mapping}
+      data-strict={comments.giscus.strict}
+      data-reactions-enabled={comments.giscus.reactionsEnabled}
+      data-emit-metadata={comments.giscus.emitMetadata}
+      data-input-position={comments.giscus.inputPosition}
+      data-theme={comments.giscus.theme}
+      data-lang={locale === 'zh-cn' ? 'zh-CN' : 'en'}
+      data-loading="lazy"
+    ></script>
+  </section>
+)}
+
+<script>
+  const commentsRoot = document.querySelector<HTMLElement>('[data-comments]');
+
+  if (commentsRoot) {
+    const giscusOrigin = 'https://giscus.app';
+    const currentTheme = () => {
+      const themePath = document.documentElement.classList.contains('dark')
+        ? commentsRoot.dataset.giscusThemeDark
+        : commentsRoot.dataset.giscusThemeLight;
+      return themePath ? new URL(themePath, window.location.origin).href : '';
+    };
+    const syncTheme = () => {
+      const frame = commentsRoot.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+      const theme = currentTheme();
+      if (!theme) return;
+      frame?.contentWindow?.postMessage({
+        giscus: {
+          setConfig: {
+            theme
+          }
+        }
+      }, giscusOrigin);
+    };
+    const connectFrame = () => {
+      const frame = commentsRoot.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+      if (!frame) return false;
+      frame.addEventListener('load', syncTheme);
+      syncTheme();
+      return true;
+    };
+
+    const config = commentsRoot.querySelector<HTMLScriptElement>('[data-giscus-loader]');
+    if (config) {
+      const loader = document.createElement('script');
+      for (const { name, value } of config.attributes) {
+        if (name.startsWith('data-') && name !== 'data-giscus-loader' && name !== 'data-client-src') loader.setAttribute(name, value);
+      }
+      loader.src = config.dataset.clientSrc || `${giscusOrigin}/client.js`;
+      loader.dataset.theme = currentTheme();
+      loader.async = true;
+      loader.crossOrigin = 'anonymous';
+      config.replaceWith(loader);
+    }
+
+    if (!connectFrame()) {
+      const observer = new MutationObserver(() => {
+        if (connectFrame()) observer.disconnect();
+      });
+      observer.observe(commentsRoot, { childList: true });
+    }
+
+    document.addEventListener('narrow-x:color-mode-change', syncTheme);
+  }
+</script>

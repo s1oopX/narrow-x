@@ -1,0 +1,36 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../layout/BaseLayout.astro';
+import Breadcrumbs from '../content/Breadcrumbs.astro';
+import PageHeader from '../content/PageHeader.astro';
+import SeriesChapterList from '../content/SeriesChapterList.astro';
+import { getLocalePath, type Locale } from '../../config/i18n';
+import { siteConfig } from '../../config/site';
+import type { ResolvedSeries } from '../../lib/content/series';
+import { useTranslations } from '../../i18n/utils';
+
+interface Props {
+  locale: Locale;
+  item: ResolvedSeries;
+}
+
+const { locale, item } = Astro.props;
+const { Content } = await render(item.entry);
+const t = useTranslations(locale);
+---
+
+<BaseLayout title={item.entry.data.title} description={item.entry.data.description} locale={locale}>
+  <Breadcrumbs
+    locale={locale}
+    items={[
+      { label: siteConfig.shortName, href: getLocalePath(locale, '/'), icon: 'lucide:home' },
+      { label: t('series.title'), href: getLocalePath(locale, '/series/'), icon: 'lucide:list-ordered' },
+      { label: item.entry.data.title, icon: 'lucide:book-open' }
+    ]}
+  />
+  <PageHeader title={item.entry.data.title} description={item.entry.data.description} locale={locale} />
+  <article class="prose max-w-none">
+    <Content />
+  </article>
+  <SeriesChapterList chapters={item.chapters} locale={locale} />
+</BaseLayout>

@@ -1,0 +1,38 @@
+[Unit]
+Description=narrow-x GitHub OAuth
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=narrow-x-oauth
+Group=narrow-x
+# The service code runs from a root-owned copy outside the deploy-writable
+# checkout; see docs/vps.md for the /opt/narrow-x/services migration.
+WorkingDirectory=/opt/narrow-x/services
+EnvironmentFile=/etc/narrow-x/oauth.env
+ExecStart=/usr/bin/node /opt/narrow-x/services/oauth.mjs
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+LockPersonality=true
+RestrictRealtime=true
+SystemCallFilter=@system-service
+# Return EPERM for filtered syscalls instead of SIGSYS: the native tsc binary
+# (TypeScript 7) probes fanotify_init during builds and must fall back, not die.
+SystemCallErrorNumber=EPERM
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+# Do NOT add MemoryDenyWriteExecute: it breaks the Node JIT.
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layout/BaseLayout.astro';
+import HomePage from '../home/HomePage.astro';
+import { contentTypes } from '../../config/content';
+import { getLocalePath, type Locale } from '../../config/i18n';
+import { siteConfig } from '../../config/site';
+import { getDisplayEntries } from '../../lib/content/entries';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const allPosts = await getDisplayEntries('posts', locale);
+const featuredPosts = allPosts.filter((entry) => entry.data.featured).slice(0, 2);
+// Only the posts actually pinned above are excluded from the recent list, so a
+// third featured post still shows up instead of vanishing from the home page.
+const pinnedIds = new Set(featuredPosts.map((entry) => entry.id));
+const sections = await Promise.all(Object.entries(contentTypes)
+  .filter(([, config]) => config.home?.enabled)
+  .map(async ([id, config]) => {
+    const home = config.home!;
+    const entries = await getDisplayEntries(config.collection, locale);
+    const visibleEntries = config.collection === 'posts'
+      ? entries.filter((entry) => !pinnedIds.has(entry.id))
+      : entries;
+    const homeEntries = home.featuredOnly ? visibleEntries.filter((entry) => 'featured' in entry.data && entry.data.featured) : visibleEntries;
+
+    return {
+      id: id as keyof typeof contentTypes,
+      title: home.title[locale],
+      href: getLocalePath(locale, config.path),
+      entries: homeEntries.slice(0, home.limit)
+    };
+  }));
+---
+
+<BaseLayout title={siteConfig.name} description={siteConfig.description[locale]} locale={locale}>
+  <HomePage locale={locale} sections={sections} featuredPosts={featuredPosts} />
+</BaseLayout>

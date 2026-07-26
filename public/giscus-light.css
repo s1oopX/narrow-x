@@ -1,0 +1,292 @@
+@import url("https://giscus.app/themes/noborder_light.css");
+
+/* narrow-x light theme — zinc palette, hairline borders, site radii. */
+main {
+  --primary-default: 39, 39, 42;
+  --color-fg-default: #27272a;
+  --color-fg-muted: #52525b;
+  --color-fg-subtle: #a1a1aa;
+  --color-canvas-default: transparent;
+  --color-canvas-overlay: #ffffff;
+  --color-canvas-inset: #ffffff;
+  --color-canvas-subtle: rgb(24 24 27 / 0.04);
+  --color-border-default: #e4e4e7;
+  --color-border-muted: #ececef;
+  --color-neutral-muted: rgb(24 24 27 / 0.06);
+  --color-btn-text: #3f3f46;
+  --color-btn-bg: #ffffff;
+  --color-btn-border: #e4e4e7;
+  --color-btn-shadow: none;
+  --color-btn-inset-shadow: none;
+  --color-btn-hover-bg: #f4f4f5;
+  --color-btn-hover-border: #d4d4d8;
+  --color-btn-primary-text: #fafafa;
+  --color-btn-primary-bg: #27272a;
+  --color-btn-primary-border: #27272a;
+  --color-btn-primary-shadow: none;
+  --color-btn-primary-inset-shadow: none;
+  --color-btn-primary-hover-bg: #18181b;
+  --color-btn-primary-hover-border: #18181b;
+  --color-accent-fg: #27272a;
+  --color-accent-emphasis: #27272a;
+  --color-accent-muted: rgb(39 39 42 / 0.35);
+  --color-accent-subtle: rgb(39 39 42 / 0.06);
+  --color-action-list-item-default-hover-bg: rgb(24 24 27 / 0.05);
+  --color-segmented-control-bg: transparent;
+  --color-segmented-control-button-bg: rgb(24 24 27 / 0.07);
+  --color-segmented-control-button-selected-border: transparent;
+}
+
+/* ---- Layout: sign-in / composer card first, then count, then thread ---- */
+
+main .gsc-comments {
+  display: flex;
+  flex-direction: column;
+}
+
+main .gsc-comments > .gsc-comment-box {
+  order: -1;
+  margin-bottom: 1.5rem;
+}
+
+/* ---- Signed-out: a centered sign-in card, no editor chrome ------------ */
+
+main .gsc-comment-box:has(.gsc-comment-box-textarea:disabled) {
+  border: 1px solid #e4e4e7;
+  border-radius: 0.625rem;
+  background-color: #ffffff;
+  padding: 2.25rem 1.5rem 2rem;
+}
+
+main .gsc-comment-box:has(.gsc-comment-box-textarea:disabled)::before {
+  content: "使用 GitHub 账号登录";
+  display: block;
+  text-align: center;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: #3f3f46;
+  margin-bottom: 1.25rem;
+}
+
+main:lang(en) .gsc-comment-box:has(.gsc-comment-box-textarea:disabled)::before {
+  content: "Sign in with GitHub";
+}
+
+main .gsc-comment-box:has(.gsc-comment-box-textarea:disabled) .gsc-comment-box-tabs,
+main .gsc-comment-box:has(.gsc-comment-box-textarea:disabled) .gsc-comment-box-main,
+main .gsc-comment-box:has(.gsc-comment-box-textarea:disabled) .gsc-comment-box-markdown-hint {
+  display: none;
+}
+
+main .gsc-comment-box:has(.gsc-comment-box-textarea:disabled) .gsc-comment-box-bottom {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  justify-content: center;
+}
+
+main .gsc-comment-box:has(.gsc-comment-box-textarea:disabled) .gsc-comment-box-buttons {
+  margin-inline-start: 0;
+}
+
+main .gsc-comment-box:has(.gsc-comment-box-textarea:disabled) .gsc-comment-box-bottom .btn {
+  font-size: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border-radius: 9999px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border: 1px solid #e4e4e7;
+  color: #27272a;
+}
+
+main .gsc-comment-box:has(.gsc-comment-box-textarea:disabled) .gsc-comment-box-bottom .btn:hover {
+  background-color: #f4f4f5;
+}
+
+main .gsc-comment-box:has(.gsc-comment-box-textarea:disabled) .gsc-comment-box-bottom .btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  /* the octicon ships an mr-2 that shoves it off-center in the circle */
+  margin: 0 !important;
+}
+
+/* ---- Signed-in editor: a quiet site panel ----------------------------- */
+
+main .gsc-comment-box:not(.gsc-comment-box-is-reply) {
+  border: 1px solid #e4e4e7;
+  border-radius: 0.625rem;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+main .gsc-comment-box-tabs {
+  background-color: transparent;
+  border-top-width: 0;
+  border-bottom: 1px solid #ececef;
+  border-radius: 0;
+}
+
+main .gsc-comment-box-main {
+  margin: 0.75rem;
+}
+
+main .gsc-comment-box-write {
+  border-radius: 0.5rem;
+}
+
+main .gsc-comment-box-write:focus-within {
+  border-color: #a1a1aa;
+  box-shadow: 0 0 0 3px rgb(39 39 42 / 0.12);
+}
+
+main .gsc-comment-box-textarea {
+  background-color: #fafafa;
+  border-color: #e4e4e7;
+  border-radius: 0.5rem;
+  border-bottom-style: solid;
+}
+
+main .gsc-comment-box-textarea-extras {
+  background-color: transparent;
+  border-width: 0;
+  padding-top: 0.375rem;
+  padding-bottom: 0;
+}
+
+main .gsc-comment-box-bottom {
+  margin: 0.75rem;
+}
+
+/* ---- Thread ----------------------------------------------------------- */
+
+main .gsc-comment {
+  font-size: 0.9375rem;
+}
+
+main .gsc-comment-content p {
+  line-height: 1.7;
+}
+
+main .gsc-comment > div {
+  border-radius: 0.625rem;
+  border-color: #e4e4e7;
+}
+
+main .gsc-replies,
+main .gsc-reply-box {
+  border-end-end-radius: 0.625rem;
+  border-end-start-radius: 0.625rem;
+}
+
+/* Empty thread: a soft illustration and a friendly caption. */
+/* #__next matches the app's own ID-specificity .hidden rule. */
+#__next main .gsc-timeline.hidden,
+main .gsc-timeline:empty,
+main .gsc-timeline:not(:has(.gsc-comment)) {
+  display: block;
+  min-height: 9.5rem;
+  margin-top: 0.5rem;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='24'%20height='24'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23d4d4d8'%20stroke-width='1.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M21%2015a2%202%200%200%201-2%202H7l-4%204V5a2%202%200%200%201%202-2h14a2%202%200%200%201%202%202z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center 1.25rem;
+  background-size: 52px 52px;
+}
+
+main .gsc-timeline.hidden::after,
+main .gsc-timeline:empty::after,
+main .gsc-timeline:not(:has(.gsc-comment))::after {
+  content: "此处尚无足音。";
+  display: block;
+  padding-top: 6rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #a1a1aa;
+}
+
+main:lang(en) .gsc-timeline.hidden::after,
+main:lang(en) .gsc-timeline:empty::after,
+main:lang(en) .gsc-timeline:not(:has(.gsc-comment))::after {
+  content: "Nothing here yet.";
+}
+
+/* ---- Header: plain count link, no attribution, detached sort pills ---- */
+
+main .gsc-header {
+  align-items: center;
+}
+
+main .gsc-left-header em {
+  display: none;
+}
+
+main .gsc-comments-count a {
+  text-decoration: none !important;
+}
+
+main .gsc-comments-count a:hover {
+  text-decoration: underline !important;
+}
+
+main .gsc-right-header.BtnGroup {
+  gap: 0.25rem;
+}
+
+main .gsc-right-header .BtnGroup-item {
+  border-radius: 9999px;
+  padding: 0;
+}
+
+main .gsc-right-header .BtnGroup-item .btn {
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8125rem;
+  color: #a1a1aa;
+}
+
+main .gsc-right-header .BtnGroup-item--selected .btn {
+  color: #18181b;
+  font-weight: 500;
+}
+
+main .gsc-right-header .BtnGroup-item:nth-child(1) .btn::before { content: "↑ "; }
+main .gsc-right-header .BtnGroup-item:nth-child(2) .btn::before { content: "↓ "; }
+
+/* Quiet timestamp links; hover reveals the affordance. */
+main a.link-secondary { text-decoration: none; }
+main a.link-secondary:hover { text-decoration: underline; }
+
+/* ---- Controls --------------------------------------------------------- */
+
+main .btn {
+  border-radius: 0.5rem;
+  box-shadow: none;
+}
+
+main .btn-primary {
+  color: #fafafa;
+  background-color: #27272a;
+  border-color: #27272a;
+}
+
+main .btn-primary:hover {
+  background-color: #18181b;
+  border-color: #18181b;
+}
+
+main .gsc-pagination-button {
+  border-radius: 0.5rem;
+}
+
+main:lang(zh-CN) .gsc-comments-count::before {
+  content: "共 ";
+}
+
+main .gsc-comments-count,
+main .gsc-comments-count-separator,
+main .gsc-left-header {
+  font-weight: 500;
+}

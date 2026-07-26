@@ -1,0 +1,214 @@
+---
+import '../../styles/global.css';
+import type { ImageMetadata } from 'astro';
+import { defaultLocale, getLocalePath, localeMeta, locales, sharedSections, type Locale } from '../../config/i18n';
+import { siteConfig } from '../../config/site';
+import { useTranslations } from '../../i18n/utils';
+import { assetPath } from '../../lib/asset-path';
+import { defaultTheme } from '../../config/theme';
+import Sidebar from './Sidebar.astro';
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import RightRail from './RightRail.astro';
+import Dock from '../ui/Dock.astro';
+import SearchModal from '../features/SearchModal.astro';
+import LoginModal from '../features/LoginModal.astro';
+import Toc from '../features/Toc.astro';
+import Comments from '../features/Comments.astro';
+import Analytics from '../features/Analytics.astro';
+import GalleryLightbox from '../features/GalleryLightbox.astro';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: ImageMetadata | string;
+  noindex?: boolean;
+  locale?: Locale;
+  headings?: Heading[];
+  toc?: boolean | 'center' | 'side';
+  comments?: boolean;
+  /** Present on article-type pages: emits og:type=article + JSON-LD. */
+  article?: {
+    publishedTime: Date;
+    modifiedTime?: Date;
+    tags?: string[];
+  };
+}
+
+const {
+  title = siteConfig.name,
+  description,
+  image,
+  noindex = false,
+  locale = defaultLocale,
+  headings = [],
+  toc = false,
+  comments = false,
+  article
+} = Astro.props;
+
+const metaDescription = description ?? siteConfig.description[locale];
+
+const t = useTranslations(locale);
+const pageTitle = title === siteConfig.name ? title : `${title} | ${siteConfig.name}`;
+const tocPosition = toc === true ? 'center' : toc;
+// Responsive TOC: below xl a sticky center pill, on xl+ an expanded panel in
+// the right column ('center' and 'side' frontmatter values behave the same).
+const showToc = (tocPosition === 'center' || tocPosition === 'side') && headings.length > 0;
+// The xl right column always exists: TOC panel when a TOC renders, RightRail otherwise.
+const showRightRail = !showToc;
+const htmlLang = localeMeta[locale].htmlLang;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site || Astro.url);
+canonicalUrl.search = '';
+canonicalUrl.hash = '';
+const rssUrl = new URL(getLocalePath(locale, '/rss.xml'), Astro.site || Astro.url).href;
+const imagePath = typeof image === 'string' ? image : image?.src || siteConfig.defaultOgImage;
+// assetPath() leaves ImageMetadata src values (which already include BASE_URL
+// in built output) and external URLs untouched.
+const resolvedImagePath = assetPath(imagePath);
+const imageUrl = /^https?:\/\//.test(resolvedImagePath)
+  ? resolvedImagePath
+  : new URL(resolvedImagePath, canonicalUrl).href;
+const faviconSvg = `${assetPath('/favicon.svg')}?v=3`;
+const faviconIco = `${assetPath('/favicon.ico')}?v=3`;
+// hreflang alternates: only for pages that are true 1:1 translations — the
+// home page and the shared sections (same list the language switcher keeps a
+// visitor inside). Content detail pages are not 1:1 translated, so they
+// intentionally get no alternates.
+const alternatePaths = ['/', ...[...sharedSections].map((section) => `/${section}/`)];
+const normalizePath = (path: string) => path.replace(/\/+$/, '') || '/';
+const currentAlternatePath = alternatePaths.find(
+  (path) => normalizePath(getLocalePath(locale, path)) === normalizePath(Astro.url.pathname)
+);
+const alternateLinks = currentAlternatePath
+  ? [
+      ...locales.map((altLocale) => ({
+        hreflang: localeMeta[altLocale].htmlLang,
+        href: new URL(getLocalePath(altLocale, currentAlternatePath), Astro.site || Astro.url).href
+      })),
+      {
+        hreflang: 'x-default',
+        href: new URL(getLocalePath(defaultLocale, currentAlternatePath), Astro.site || Astro.url).href
+      }
+    ]
+  : [];
+const jsonLd = article
+  ? JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: title,
+      description: metaDescription,
+      datePublished: article.publishedTime.toISOString(),
+      dateModified: (article.modifiedTime ?? article.publishedTime).toISOString(),
+      inLanguage: htmlLang,
+      image: [imageUrl],
+      keywords: article.tags?.join(', ') || undefined,
+      mainEntityOfPage: canonicalUrl.href,
+      author: {
+        '@type': 'Person',
+        name: siteConfig.author.name,
+        url: new URL(getLocalePath(locale, '/'), Astro.site || Astro.url).href
+      }
+    })
+  : null;
+
+const themeInit = `
+(() => {
+  const root = document.documentElement;
+  try {
+    const theme = localStorage.getItem('theme') || '${defaultTheme}';
+    const mode = localStorage.getItem('color-mode');
+    const contentWidth = localStorage.getItem('content-width');
+    root.dataset.theme = theme;
+    if (contentWidth && /^\\d+(?:\\.\\d+)?rem$/.test(contentWidth)) {
+      root.style.setProperty('--layout-content-width', contentWidth);
+    }
+    if (mode === 'dark' || (!mode && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      root.classList.add('dark');
+    }
+  } catch {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) root.classList.add('dark');
+  }
+})();
+`;
+---
+
+<!doctype html>
+<html lang={htmlLang} data-theme={defaultTheme} style={`--layout-content-width: ${siteConfig.contentWidth}`}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={metaDescription} />
+    <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
+    <meta name="generator" content={Astro.generator} />
+    {!noindex && <link rel="canonical" href={canonicalUrl.href} />}
+    {!noindex && alternateLinks.map((alternate) => (
+      <link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />
+    ))}
+    <meta property="og:site_name" content={siteConfig.name} />
+    <meta property="og:type" content={article ? 'article' : 'website'} />
+    {article && <meta property="article:published_time" content={article.publishedTime.toISOString()} />}
+    {article?.modifiedTime && <meta property="article:modified_time" content={article.modifiedTime.toISOString()} />}
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:url" content={canonicalUrl.href} />
+    <meta property="og:locale" content={locale === 'zh-cn' ? 'zh_CN' : 'en_US'} />
+    <meta property="og:image" content={imageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="twitter:image" content={imageUrl} />
+    <link rel="icon" type="image/svg+xml" href={faviconSvg} />
+    <link rel="icon" href={faviconIco} />
+    <link rel="alternate" type="application/rss+xml" title={`${siteConfig.name} RSS`} href={rssUrl} />
+    <title>{pageTitle}</title>
+    {jsonLd && <script type="application/ld+json" set:html={jsonLd}></script>}
+    <script is:inline set:html={themeInit}></script>
+  </head>
+  <body class="bg-background text-foreground min-h-screen antialiased">
+    <a href="#main-content" class="sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground">{t('a11y.skipToContent')}</a>
+    <Sidebar locale={locale} />
+    <div class="min-h-screen lg:pl-60">
+      <Header locale={locale} title={title} />
+      <div class="mx-auto w-full max-w-[calc(var(--layout-content-width)+19rem)] px-4 sm:px-6">
+        <div class="xl:grid xl:grid-cols-[minmax(0,1fr)_15rem] xl:gap-8">
+          <div class:list={['mx-auto min-w-0 w-full max-w-[var(--layout-content-width)] xl:mx-0 xl:max-w-none', showToc && 'has-center-toc']}>
+            {showToc && (
+              <div class="sticky top-16 z-20 -mx-4 flex justify-center border-b border-border bg-background/80 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 xl:hidden">
+                <Toc headings={headings} position="center" locale={locale} />
+              </div>
+            )}
+            <main id="main-content" class="min-w-0 py-4">
+              <slot />
+              {comments && <Comments locale={locale} />}
+            </main>
+            <Footer locale={locale} />
+          </div>
+          {showToc ? <Toc headings={headings} position="panel" locale={locale} /> : <RightRail locale={locale} />}
+        </div>
+      </div>
+    </div>
+    {siteConfig.ui.dock.enabled && <Dock locale={locale} variant="floating" />}
+    <SearchModal locale={locale} />
+    <LoginModal locale={locale} />
+    <GalleryLightbox locale={locale} />
+    <Analytics />
+    <script>
+      import '../../scripts/theme-controls.ts';
+      import '../../scripts/reading-progress.ts';
+      import '../../scripts/search.ts';
+      import '../../scripts/login.ts';
+      import '../../scripts/toc.ts';
+      import '../../scripts/gallery.ts';
+      import '../../scripts/mermaid.ts';
+      import '../../scripts/dock.ts';
+      import '../../scripts/tabs.ts';
+    </script>
+  </body>
+</html>

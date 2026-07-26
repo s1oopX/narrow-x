@@ -1,0 +1,24 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import PostDetail from '../../../components/routes/PostDetail.astro';
+import { nonDefaultLocales, type Locale } from '../../../config/i18n';
+import { getLocalizedEntries, entrySlug } from '../../../lib/content/entries';
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const locale of nonDefaultLocales) {
+    const posts = await getLocalizedEntries('posts', locale);
+    paths.push(...posts.map((entry) => ({ params: { locale, slug: entrySlug(entry) }, props: { entry, locale } })));
+  }
+  return paths;
+}
+
+interface Props {
+  entry: CollectionEntry<'posts'>;
+  locale: Locale;
+}
+
+const { entry, locale } = Astro.props;
+---
+
+<PostDetail locale={locale} entry={entry} />

@@ -1,0 +1,277 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { Locale } from '../../config/i18n';
+import { useTranslations } from '../../i18n/utils';
+
+interface Props {
+  articleId: string;
+  locale: Locale;
+}
+
+const { articleId, locale } = Astro.props;
+const t = useTranslations(locale);
+const seed = Array.from(articleId).reduce(
+  (hash, character) => Math.imul(hash ^ character.charCodeAt(0), 16777619) >>> 0,
+  2166136261
+);
+const baseCount = 8 + (seed % 13);
+const likeLabel = t('postLike.like');
+const unlikeLabel = t('postLike.unlike');
+const countLabel = t('postLike.count');
+const initialLabel = `${likeLabel}, ${countLabel.replace('{count}', String(baseCount))}`;
+---
+
+<div
+  class="post-like"
+  data-post-like
+  data-like-key={`narrow-x:post-like:${articleId}`}
+  data-base-count={baseCount}
+  data-like-label={likeLabel}
+  data-unlike-label={unlikeLabel}
+  data-count-label={countLabel}
+>
+  <button type="button" class="post-like-button" data-like-button aria-pressed="false" aria-label={initialLabel} title={likeLabel}>
+    <span class="post-like-visual" aria-hidden="true">
+      <Icon name="lucide:heart" is:inline class="post-like-heart" />
+      <span class="post-like-particles">
+        {Array.from({ length: 8 }, (_, index) => <span class={`post-like-particle particle-${index + 1}`}></span>)}
+      </span>
+    </span>
+    <span class="post-like-count" data-like-count>{baseCount}</span>
+  </button>
+</div>
+
+<script>
+  function setupPostLikes() {
+    document.querySelectorAll<HTMLElement>('[data-post-like]').forEach((root) => {
+      if (root.dataset.ready === 'true') return;
+
+      const button = root.querySelector<HTMLButtonElement>('[data-like-button]');
+      const count = root.querySelector<HTMLElement>('[data-like-count]');
+      const storageKey = root.dataset.likeKey;
+      const baseCount = Number(root.dataset.baseCount);
+      if (!button || !count || !storageKey || !Number.isFinite(baseCount)) return;
+
+      let liked = false;
+      try {
+        liked = localStorage.getItem(storageKey) === '1';
+      } catch {
+        // The button still works for this page view when storage is unavailable.
+      }
+
+      const render = (animate = false) => {
+        const label = liked ? root.dataset.unlikeLabel : root.dataset.likeLabel;
+        const total = baseCount + (liked ? 1 : 0);
+        const countLabel = (root.dataset.countLabel || '{count} likes').replace('{count}', String(total));
+        button.setAttribute('aria-pressed', String(liked));
+        button.setAttribute('aria-label', `${label || 'Like'}, ${countLabel}`);
+        button.title = label || 'Like';
+        count.textContent = String(total);
+
+        if (!animate || !liked) return;
+        button.classList.remove('is-burst');
+        void button.offsetWidth;
+        button.classList.add('is-burst');
+        window.setTimeout(() => button.classList.remove('is-burst'), 650);
+      };
+
+      render();
+      button.addEventListener('click', () => {
+        liked = !liked;
+        try {
+          if (liked) localStorage.setItem(storageKey, '1');
+          else localStorage.removeItem(storageKey);
+        } catch {
+          // Keep the in-page state even when storage is unavailable.
+        }
+        render(true);
+      });
+      root.dataset.ready = 'true';
+    });
+  }
+
+  setupPostLikes();
+</script>
+
+<style>
+  .post-like {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.75rem;
+  }
+
+  .post-like-button {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.2rem;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--color-muted-foreground);
+    cursor: pointer;
+    padding: 0 0.55rem 0 0;
+    transition: color 160ms ease, background-color 160ms ease;
+  }
+
+  .post-like-button:hover {
+    background: color-mix(in oklch, var(--color-caution), transparent 92%);
+    color: var(--color-caution);
+  }
+
+  .post-like-button:focus-visible {
+    outline: 2px solid color-mix(in oklch, var(--color-caution), transparent 60%);
+    outline-offset: 2px;
+  }
+
+  .post-like-button[aria-pressed='true'] {
+    color: var(--color-caution);
+  }
+
+  .post-like-visual {
+    position: relative;
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 2.75rem;
+    place-items: center;
+  }
+
+  .post-like-visual::after {
+    position: absolute;
+    width: 1.45rem;
+    height: 1.45rem;
+    border: 2px solid var(--color-caution);
+    border-radius: 50%;
+    content: '';
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .post-like-button :global(.post-like-heart) {
+    position: relative;
+    z-index: 2;
+    width: 1.45rem;
+    height: 1.45rem;
+    fill: transparent;
+    stroke-width: 1.8;
+    transition: fill 160ms ease, color 160ms ease, transform 160ms ease;
+  }
+
+  .post-like-button[aria-pressed='true'] :global(.post-like-heart) {
+    fill: currentColor;
+  }
+
+  .post-like-button[aria-pressed='true'] :global(.post-like-heart path) {
+    fill: currentColor;
+    stroke: currentColor;
+  }
+
+  .post-like-count {
+    min-width: 2ch;
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .post-like-particles {
+    position: absolute;
+    inset: 50%;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .post-like-particle {
+    --particle-color: var(--color-caution);
+    --particle-x: 0px;
+    --particle-y: -1.65rem;
+    position: absolute;
+    top: -0.14rem;
+    left: -0.14rem;
+    width: 0.28rem;
+    height: 0.28rem;
+    border-radius: 50%;
+    background: var(--particle-color);
+    opacity: 0;
+  }
+
+  .particle-2 { --particle-color: var(--color-important); --particle-x: 1.2rem; --particle-y: -1.2rem; }
+  .particle-3 { --particle-color: var(--color-warning); --particle-x: 1.65rem; --particle-y: 0px; }
+  .particle-4 { --particle-color: var(--color-note); --particle-x: 1.2rem; --particle-y: 1.2rem; }
+  .particle-5 { --particle-color: var(--color-caution); --particle-x: 0px; --particle-y: 1.65rem; }
+  .particle-6 { --particle-color: var(--color-important); --particle-x: -1.2rem; --particle-y: 1.2rem; }
+  .particle-7 { --particle-color: var(--color-warning); --particle-x: -1.65rem; --particle-y: 0px; }
+  .particle-8 { --particle-color: var(--color-note); --particle-x: -1.2rem; --particle-y: -1.2rem; }
+
+  .post-like-button.is-burst :global(.post-like-heart) {
+    animation: post-like-heart-pop 520ms cubic-bezier(0.2, 0.9, 0.25, 1.35);
+  }
+
+  .post-like-button.is-burst .post-like-visual::after {
+    animation: post-like-ring 480ms ease-out;
+  }
+
+  .post-like-button.is-burst .post-like-particle {
+    animation: post-like-particle 560ms cubic-bezier(0.18, 0.8, 0.3, 1) forwards;
+  }
+
+  @keyframes post-like-heart-pop {
+    0% { transform: scale(0.7); }
+    45% { transform: scale(1.28); }
+    72% { transform: scale(0.92); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes post-like-ring {
+    0% { opacity: 0.8; transform: scale(0.35); }
+    100% { opacity: 0; transform: scale(1.7); }
+  }
+
+  @keyframes post-like-particle {
+    0% { opacity: 0; transform: translate(0, 0) scale(0.35); }
+    25% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--particle-x), var(--particle-y)) scale(0.8); }
+  }
+
+  @keyframes post-like-heart-pop-reduced {
+    0% { transform: scale(0.9); }
+    55% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes post-like-ring-reduced {
+    0% { opacity: 0.85; transform: scale(0.45); }
+    100% { opacity: 0; transform: scale(1.6); }
+  }
+
+  @keyframes post-like-particle-reduced {
+    0% { opacity: 0; transform: translate(0, 0) scale(0.35); }
+    30% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--particle-x), var(--particle-y)) scale(0.8); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .post-like-button,
+    .post-like-button :global(.post-like-heart) {
+      transition: none;
+    }
+
+    .post-like-particles {
+      transform: scale(0.9);
+      transform-origin: 0 0;
+    }
+
+    .post-like-button.is-burst :global(.post-like-heart) {
+      animation: post-like-heart-pop-reduced 360ms ease-out;
+    }
+
+    .post-like-button.is-burst .post-like-visual::after {
+      animation: post-like-ring-reduced 340ms ease-out;
+    }
+
+    .post-like-button.is-burst .post-like-particle {
+      animation: post-like-particle-reduced 420ms ease-out forwards;
+    }
+  }
+</style>

@@ -1,0 +1,36 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { contentTypes, type ContentTypeId } from '../../config/content';
+import type { Locale } from '../../config/i18n';
+import { useTranslations } from '../../i18n/utils';
+import EntryCard from './EntryCard.astro';
+
+interface Props {
+  entries: Array<CollectionEntry<'posts'> | CollectionEntry<'projects'> | CollectionEntry<'recommendations'>>;
+  collection: ContentTypeId;
+  locale: Locale;
+  priorityFirst?: boolean;
+}
+
+const { entries, collection, locale, priorityFirst = false } = Astro.props;
+const t = useTranslations(locale);
+const config = contentTypes[collection];
+const gridClasses = {
+  1: 'grid gap-4',
+  2: 'grid gap-4 sm:grid-cols-2',
+  3: 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
+};
+const listClass = config.listLayout === 'grid'
+  ? gridClasses[config.gridColumns]
+  : 'space-y-4';
+---
+
+{entries.length > 0 ? (
+  <div class={listClass}>
+    {entries.map((entry, index) => (
+      <EntryCard entry={entry} collection={collection} locale={locale} priority={priorityFirst && index === 0} />
+    ))}
+  </div>
+) : (
+  <p class="surface-panel p-5 text-sm text-muted-foreground">{t('list.empty')}</p>
+)}

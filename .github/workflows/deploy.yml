@@ -1,0 +1,61 @@
+name: Verify site
+
+'on':
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      ASTRO_SITE: https://example.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.7.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Run self-tests
+        run: |
+          pnpm run oauth:self-test
+          pnpm run deploy:self-test
+          pnpm run deploy:policy:self-test
+
+      - name: Build and check links
+        run: |
+          pnpm build
+          pnpm run links:self-test
+          pnpm run csp:self-test
+          pnpm run assets:self-test
+          pnpm run browser:self-test
+
+      - name: Verify project-base compatibility
+        run: |
+          ASTRO_BASE=/narrow-x/ pnpm build
+          ASTRO_BASE=/narrow-x/ pnpm run links:self-test
+          ASTRO_BASE=/narrow-x/ pnpm run assets:self-test

@@ -1,0 +1,104 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { CollectionEntry } from 'astro:content';
+import { defaultLocale, getLocalePath, type Locale } from '../../config/i18n';
+import type { ContentTypeId } from '../../config/content';
+import { siteConfig } from '../../config/site';
+import { useTranslations } from '../../i18n/utils';
+import { assetPath } from '../../lib/asset-path';
+import EntryList from '../content/EntryList.astro';
+import ViewAll from '../ui/ViewAll.astro';
+
+interface HomeSection {
+  id: ContentTypeId;
+  title: string;
+  href: string;
+  entries: Array<CollectionEntry<any>>;
+}
+
+interface Props {
+  locale: Locale;
+  sections: HomeSection[];
+  featuredPosts?: Array<CollectionEntry<'posts'>>;
+}
+
+const { locale, sections, featuredPosts = [] } = Astro.props;
+const { author } = siteConfig;
+const t = useTranslations(locale);
+const avatarSrc = assetPath(author.avatar);
+const hasPublishedContent = featuredPosts.length > 0 || sections.some((section) => section.entries.length > 0);
+const firstSectionId = sections.find((section) => section.entries.length > 0)?.id;
+---
+
+<section class="py-8 sm:py-10 lg:hidden">
+  <div class="profile-card surface-card px-7 py-5 sm:px-8 sm:py-6">
+    <div class="flex flex-col items-center gap-6 text-center md:flex-row md:items-start md:text-left">
+      <img
+        src={avatarSrc}
+        alt={author.name}
+        width="96"
+        height="96"
+        class="h-24 w-24 shrink-0 rounded-full border-4 border-primary/20 object-cover shadow-sm"
+        loading="eager"
+      />
+
+      <div class="min-w-0 flex-1">
+        <h1 class="text-3xl font-bold tracking-tight">{author.name}</h1>
+        <p class="mt-1.5 text-lg text-muted-foreground">{author.title[locale]}</p>
+        <p class="mt-3 leading-relaxed text-foreground">{author.description[locale]}</p>
+
+        {author.social.length > 0 && (
+          <div class="mt-5 flex flex-wrap items-center justify-center gap-2.5 md:justify-start">
+            {author.social.map((item) => (
+              <a
+                href={item.url}
+                target={item.url.startsWith('http') ? '_blank' : undefined}
+                rel={item.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+                class="inline-flex items-center gap-2 rounded-[var(--radius-control)] bg-muted px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-primary/10 hover:text-primary"
+                title={item.name}
+              >
+                <Icon name={item.icon} class="h-4 w-4" />
+                <span class="hidden sm:inline">{item.name}</span>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</section>
+
+{!hasPublishedContent && locale !== defaultLocale && (
+  <section class="py-8 text-center">
+    <p class="text-muted-foreground">{t('home.localeEmpty')}</p>
+    <a href={getLocalePath(defaultLocale, '/')} class="mt-3 inline-flex items-center font-medium text-primary hover:underline">
+      {t('home.localeEmpty.cta')}
+    </a>
+  </section>
+)}
+
+{featuredPosts.length > 0 && (
+  <section class="py-8">
+    <div class="mb-3 flex items-end justify-between gap-4">
+      <h2 class="text-2xl font-semibold">{t('home.pinnedPosts')}</h2>
+    </div>
+    <EntryList entries={featuredPosts} collection="posts" locale={locale} priorityFirst />
+  </section>
+)}
+
+{sections.map((section) => (
+  section.entries.length > 0 && (
+    <section class="py-8">
+      <div class="mb-3 flex items-end justify-between gap-4">
+        <h2 class="text-2xl font-semibold">{section.title}</h2>
+        <ViewAll href={section.href} locale={locale} />
+      </div>
+      <EntryList
+        entries={section.entries}
+        collection={section.id}
+        locale={locale}
+        priorityFirst={featuredPosts.length === 0 && section.id === firstSectionId}
+      />
+    </section>
+  )
+))}

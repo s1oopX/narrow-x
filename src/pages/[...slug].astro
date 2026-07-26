@@ -1,0 +1,20 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import PageDetail from '../components/routes/PageDetail.astro';
+import { defaultLocale } from '../config/i18n';
+import { getLocalizedEntries } from '../lib/content/entries';
+import { assertPageSlug } from '../lib/content/reserved-slugs';
+
+export async function getStaticPaths() {
+  const pages = await getLocalizedEntries('pages', defaultLocale);
+  return pages.map((entry) => ({ params: { slug: assertPageSlug(entry) }, props: { entry } }));
+}
+
+interface Props {
+  entry: CollectionEntry<'pages'>;
+}
+
+const { entry } = Astro.props;
+---
+
+<PageDetail locale={defaultLocale} entry={entry} />

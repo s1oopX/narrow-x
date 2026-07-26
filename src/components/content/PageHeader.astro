@@ -1,0 +1,22 @@
+---
+import type { Locale } from '../../config/i18n';
+import { formatDate } from '../../lib/content/entries';
+
+interface Props {
+  title: string;
+  description?: string;
+  date?: Date;
+  locale: Locale;
+}
+
+const { title, description, date, locale } = Astro.props;
+---
+
+{/* On lg the sticky header shows the title visually, but that element is a
+    <p>; keep this <h1> in the accessibility tree via sr-only so every page
+    retains exactly one semantic h1. */}
+<header class:list={['mb-10', !date && 'lg:sr-only']}>
+  {date && <time class="text-sm text-muted-foreground" datetime={date.toISOString()}>{formatDate(date, locale)}</time>}
+  <h1 class="mt-2 text-3xl font-bold tracking-normal sm:text-4xl lg:sr-only">{title}</h1>
+  {description && <p class="mt-4 max-w-2xl text-muted-foreground lg:hidden">{description}</p>}
+</header>

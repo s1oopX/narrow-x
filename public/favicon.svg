@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img">
+  <title>Narrow-X</title>
+  <rect x="4" y="4" width="120" height="120" rx="27" fill="#18181b" />
+  <rect x="5" y="5" width="118" height="118" rx="26" fill="none" stroke="#3f3f46" stroke-width="2" />
+  <rect x="52" y="28" width="24" height="72" rx="6" fill="#fafafa" />
+  <rect x="30" y="40" width="8" height="48" rx="4" fill="#52525b" />
+  <rect x="90" y="40" width="8" height="48" rx="4" fill="#52525b" />
+</svg>
