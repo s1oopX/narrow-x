@@ -33,22 +33,20 @@ const themeCredit = siteConfig.themeCredit;
 
   <div class="mb-6 border-t border-border"></div>
 
-  <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <p class="text-center sm:text-left">
-      © {year} {siteConfig.author.name}
-      {license.enabled && (
-        <>
-          {' · '}
-          <a
-            class="transition-colors hover:text-foreground hover:underline"
-            href={license.url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >{license.name}</a>
-        </>
-      )}
-    </p>
-
+  <p class="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center">
+    <span>© {year} {siteConfig.author.name}</span>
+    {license.enabled && (
+      <>
+        <span aria-hidden="true">·</span>
+        <a
+          class="transition-colors hover:text-foreground hover:underline"
+          href={license.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >{license.name}</a>
+      </>
+    )}
+    <span aria-hidden="true">·</span>
     {themeCredit.url ? (
       <a
         class="transition-colors hover:text-foreground hover:underline"
@@ -59,7 +57,7 @@ const themeCredit = siteConfig.themeCredit;
     ) : (
       <span>{t('footer.theme')} {themeCredit.name} · {t('footer.themePending')}</span>
     )}
-  </div>
+  </p>
 
   {siteConfig.author.social.length > 0 && (
     <div class="mt-6 flex items-center justify-center gap-2 lg:hidden">
