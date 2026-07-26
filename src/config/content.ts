@@ -1,7 +1,7 @@
 import type { Locale } from './i18n';
 
 export type ContentCollection = 'posts' | 'projects' | 'recommendations' | 'pages';
-export type EntryCardStyle = 'article' | 'showcase' | 'compact';
+export type EntryCardStyle = 'article' | 'showcase' | 'compact' | 'feature';
 export type EntryListLayout = 'stack' | 'grid';
 export type EntryGridColumns = 1 | 2 | 3;
 export type HomeSectionConfig = {
@@ -42,9 +42,9 @@ export const contentTypes = {
       'zh-cn': '作品'
     },
     showMeta: true,
-    cardStyle: 'showcase',
-    listLayout: 'grid',
-    gridColumns: 3,
+    cardStyle: 'feature',
+    listLayout: 'stack',
+    gridColumns: 1,
     home: {
       enabled: true,
       limit: 3,
