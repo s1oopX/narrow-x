@@ -32,6 +32,10 @@
 
 :root {
   color-scheme: light;
+  /* Reserve a symmetric scrollbar gutter on both edges so centered layouts
+     sit visually centered in the physical window, not layout-width centered
+     (which reads as a wider right margin). */
+  scrollbar-gutter: stable both-edges;
   --layout-content-width: 56rem;
   --radius: 0.625rem;
   --radius-sm: calc(var(--radius) - 0.25rem);
