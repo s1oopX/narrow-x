@@ -14,6 +14,8 @@
   --color-card-foreground: oklch(0.145 0 0);
   --color-popover: oklch(1 0 0);
   --color-popover-foreground: oklch(0.145 0 0);
+  /* Hyperlink accent: light blue that clears WCAG AA on white. */
+  --color-link: oklch(0.56 0.13 245);
 
 
   /* Alert L values are tuned per hue so titles clear 4.5:1 on white (AA). */
@@ -39,6 +41,7 @@
   --color-card-foreground: oklch(0.985 0 0);
   --color-popover: oklch(0.269 0 0);
   --color-popover-foreground: oklch(0.985 0 0);
+  --color-link: oklch(0.72 0.11 245);
 
   --color-note: oklch(0.67 0.15 252.5);
   --color-tip: oklch(0.67 0.15 162.48);

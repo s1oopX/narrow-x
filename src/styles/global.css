@@ -74,6 +74,17 @@ a {
   color: inherit;
 }
 
+/* Hyperlink accent. Lives outside Tailwind's layers on purpose: the base
+   `a { color: inherit }` above is unlayered and would defeat any utility. */
+.site-link {
+  color: var(--color-link);
+  transition: color 180ms ease;
+}
+
+.site-link:hover {
+  text-decoration: underline;
+}
+
 .search-highlight {
   border-radius: var(--radius-sm);
   background: color-mix(in oklch, var(--color-primary), transparent 68%);
